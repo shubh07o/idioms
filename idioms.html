@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Vocabulary Practice</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font and basic styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            min-height: 100vh;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .option-btn {
+            /* Ensures each option button is a full-width block */
+            @apply w-full text-left px-4 py-3 border border-gray-200 rounded-lg text-gray-700 font-medium bg-white transition duration-150 ease-in-out shadow-sm;
+            display: block; 
+            margin-bottom: 12px; /* Ensure space between options */
+        }
+        .option-btn:not(:disabled):hover {
+            @apply bg-indigo-50 border-indigo-400;
+        }
+        .option-label-container {
+            /* Container for the label and text, ensuring they stay on one line (flex row) */
+             @apply flex items-start space-x-2;
+        }
+        .option-label {
+            /* Fixed width for A, B, C, D label */
+            @apply font-bold text-indigo-600 w-6 flex-shrink-0;
+        }
+        .option-text {
+            /* Allows the text to take up remaining space and wrap */
+            @apply text-gray-900 text-base flex-1; 
+            white-space: normal; /* Ensures text wrapping */
+        }
+        
+        /* Removed styles for question map buttons */
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- Quiz Card (Single Column) -->
+    <div id="quiz-container" class="w-full max-w-xl bg-white shadow-2xl rounded-xl p-6 md:p-10 transition-all duration-300">
+        
+        <div class="flex justify-between items-center mb-4 border-b pb-2">
+            <h1 class="text-3xl font-bold text-gray-800">Idioms Practice - 605 Questions)</h1>
+            <!-- Removed Timer and Topic Info -->
+        </div>
+        
+        <!-- Question Area -->
+        <div class="mb-6">
+            <!-- Removed Question Number -->
+            <p id="question-text" class="text-xl font-semibold text-gray-900 mb-4 bg-yellow-50 p-3 rounded-lg border-l-4 border-yellow-500">
+                Loading idiom...
+            </p>
+            <p class="text-lg text-gray-600 font-medium mt-2">Choose the correct meaning:</p>
+        </div>
+
+        <!-- Options Area -->
+        <div id="options-container" class="space-y-3 mb-8">
+            <!-- Option buttons will be injected here by JavaScript -->
+        </div>
+
+        <!-- Controls and Status -->
+        <div class="flex justify-end pt-4 border-t">
+            <!-- Next Button -->
+            <button 
+                id="next-button" 
+                class="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 ease-in-out disabled:opacity-50"
+                disabled
+            >
+                Next Idiom
+            </button>
+           
+            <button 
+                id="restart-button" 
+                class="hidden w-full sm:w-auto px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-150 ease-in-out ml-3"
+                onclick="initializeQuiz()"
+            >
+                Restart Practice
+            </button>
+        </div>
+        
+        <!-- Quiz Over Message -->
+        <div id="quiz-result" class="hidden mt-6 text-center">
+            <h2 class="text-2xl font-bold text-green-700 mb-2">Practice Session Complete!</h2>
+            <p class="text-lg text-gray-600">You have completed all the practice questions.</p>
+        </div>
+    </div>
+
+
+    <script>
+        // --- DATA EXTRACTION AND STRUCTURING for Idioms on themes.pdf ---
+        // Combined list of all 605 idioms
+       const idiomData = [
+    // --- IDIOMS ON COLOURS (73) ---
+    // BLACK (10)
+    { idiom: "Black sheep", meaning: "one who is a disgrace or embarrassment to his group" },
+    { idiom: "In black and white", meaning: "in writing" },
+    { idiom: "Black is white", meaning: "the truth is opposite" },
+    { idiom: "To beat somebody black and blue", meaning: "beat somebody very badly" },
+    { idiom: "Pot calling the kettle black", meaning: "a person who criticises someone else for the fault of which he himself is guilty" },
+    { idiom: "To be in someone's black books", meaning: "not to be in favour with someone or not in good terms" },
+    { idiom: "To be in the black", meaning: "to be out of debt (solvent)" },
+    { idiom: "Black hat hacker", meaning: "one who hacks data / a cybercriminal" },
+    { idiom: "Black hearted", meaning: "malevolent" },
+    { idiom: "Black look", meaning: "a very angry look" },
+    // WHITE (6)
+    { idiom: "To raise/show a white flag", meaning: "to accept defeat and surrender" },
+    { idiom: "White elephant", meaning: "a useless and expensive possession" },
+    { idiom: "A white lie", meaning: "a harmless lie told to avoid hurting someone's feelings" },
+    { idiom: "White gloves", meaning: "to provide high quality service" },
+    { idiom: "White hope", meaning: "when someone or something is expected to succeed" },
+    { idiom: "Whiter than white", meaning: "a person who has never done any wrong" },
+    // BLUE (12)
+    { idiom: "Out of the blue", meaning: "to happen quite suddenly/unexpectedly" },
+    { idiom: "A bolt from the blue", meaning: "when some unexpected bad news is received" },
+    { idiom: "Once in a blue moon", meaning: "very rarely" },
+    { idiom: "Beat somebody black and blue", meaning: "to beat someone unkindly" },
+    { idiom: "Blue blood", meaning: "someone from a noble or wealthy family" },
+    { idiom: "A blue-eyed boy", meaning: "everyone's favourite" },
+    { idiom: "Blue ribbon", meaning: "to be of superior quality or distinction, the best of a group" },
+    { idiom: "Blue book", meaning: "government report" },
+    { idiom: "Blue heart", meaning: "deep, stable and honest love" },
+    { idiom: "Feeling blue", meaning: "feeling sad" },
+    { idiom: "Blue stocking", meaning: "an educated but pedantic lady" },
+    { idiom: "True blue", meaning: "completely loyal" },
+    // RED (12)
+    { idiom: "To show the red card", meaning: "to dismiss from the job" },
+    { idiom: "To be in the red", meaning: "to be in debt" },
+    { idiom: "To be out of the red", meaning: "to be out of debt" },
+    { idiom: "Catch someone red-handed", meaning: "to catch someone while committing a crime" },
+    { idiom: "Red in the face", meaning: "to be ashamed/embarrassed" },
+    { idiom: "Red-letter day", meaning: "a memorable or important day" },
+    { idiom: "Red tapism", meaning: "bureaucratic delay or too much official formalities" },
+    { idiom: "To paint the town red", meaning: "to go out and have fun, often by drinking, dancing, and laughing with friends" },
+    { idiom: "Red carpet treatment/welcome", meaning: "to receive special / royal treatment, or a big, warm welcome" },
+    { idiom: "Red herring", meaning: "something to distract attention" },
+    { idiom: "Red mist", meaning: "too much anger" },
+    { idiom: "Like a red flag to a bull", meaning: "something that makes you angry" },
+    // GREEN (5)
+    { idiom: "To be green horn", meaning: "someone who is immature or inexperienced" },
+    { idiom: "Green thumb/green finger", meaning: "someone with a talent for gardening" },
+    { idiom: "Green-eyed monster", meaning: "a jealous person" },
+    { idiom: "Green light/signal", meaning: "approval" },
+    { idiom: "Grass is always greener on the other side", meaning: "a place that is far away and looks better than where you are now" },
+    // PINK (5)
+    { idiom: "Pink slip", meaning: "a termination notice" },
+    { idiom: "In the pink", meaning: "in very good health or feeling good" },
+    { idiom: "To see pink elephant", meaning: "to be drunk" },
+    { idiom: "Tickled pink or pink cloud", meaning: "very happy" },
+    { idiom: "Pinkie/Pinky promise", meaning: "a sincere promise made usually by children, by connecting their little fingers" },
+    // YELLOW (6)
+    { idiom: "Yellow bellied", meaning: "a coward or extremely timid" },
+    { idiom: "A yellow streak", meaning: "to act in a cowardly way" },
+    { idiom: "Yellow journalism", meaning: "sensational representation of news rather than the truth" },
+    { idiom: "Yellow page", meaning: "page of advertisement" },
+    { idiom: "Yellow cake", meaning: "a cake having too many eggs" },
+    { idiom: "To walk on yellow road", meaning: "path of sure success" },
+    // GREY (9)
+    { idiom: "Grey area", meaning: "unclear or ambiguous situation" },
+    { idiom: "Grey list", meaning: "a list of items or people considered questionable or suspicious" },
+    { idiom: "Grey matter", meaning: "intelligence or brainpower" },
+    { idiom: "Grey panther", meaning: "an older person who remains active and vibrant" },
+    { idiom: "Grey power", meaning: "the influence and purchasing power of older people" },
+    { idiom: "Paint it grey", meaning: "to make something dull or uninteresting" },
+    { idiom: "Grey cloud", meaning: "a worrying or threatening situation" },
+    { idiom: "Grey day", meaning: "a dull or depressing day" },
+    { idiom: "Turn grey", meaning: "to become bored or tired" },
+    // GENERAL COLOUR (8)
+    { idiom: "To show one's true colour", meaning: "to reveal someone's true character or nature, especially when it's unpleasant" },
+    { idiom: "With flying colours", meaning: "to complete something with great distinction, and excellent results" },
+    { idiom: "To be colourless", meaning: "someone who is really boring" },
+    { idiom: "Off colour", meaning: "when someone is not feeling well (quite ill or uneasy)" },
+    { idiom: "A highly coloured report", meaning: "a report that is exaggerated or has a biased view" },
+    { idiom: "Dyed in the wool", meaning: "someone or something that is permanent" },
+    { idiom: "To paint in bright colours", meaning: "to describe something in a flattering way" },
+    { idiom: "To be kept in the dark", meaning: "Keeping a secret from someone, shielding the truth" },
+
+    // --- IDIOMS ON ANIMALS (147) ---
+    // WOLF (7)
+    { idiom: "Wolf in sheep's clothing", meaning: "someone who appears harmless but has evil intentions" },
+    { idiom: "To cry wolf", meaning: "to raise a false alarm or lie repeatedly" },
+    { idiom: "A lone wolf", meaning: "someone who prefers to work alone" },
+    { idiom: "Wolf at the door", meaning: "to starve / to be in debt" },
+    { idiom: "To keep the wolf from the door", meaning: "to have enough to eat" },
+    { idiom: "Wolf's hunger", meaning: "an insatiable desire" },
+    { idiom: "Howl at the wolf", meaning: "to protest or complain loudly" },
+    // DOG (12)
+    { idiom: "Dog-eats-dog", meaning: "a fiercely competitive environment" },
+    { idiom: "To rain cats and dogs", meaning: "raining heavily" },
+    { idiom: "Top dog", meaning: "a successful or dominant person in his field" },
+    { idiom: "A dog and pony show", meaning: "an overly elaborate presentation or a show for promotion" },
+    { idiom: "Let sleeping dogs lie", meaning: "avoid stirring up trouble" },
+    { idiom: "Go to the dogs", meaning: "to be ruined" },
+    { idiom: "Dog days", meaning: "hot summer days" },
+    { idiom: "Put on the dog", meaning: "to show off or pretend" },
+    { idiom: "To bark up the wrong tree", meaning: "suspecting wrong person" },
+    { idiom: "Puppy love", meaning: "childhood love" },
+    { idiom: "To lead a cat and dog life", meaning: "Always quarreling" },
+    { idiom: "To call the dogs off", meaning: "to stop criticizing, threatening or attacking" },
+    // CAT (8)
+    { idiom: "Let the cat out of the bag", meaning: "to reveal the secret" },
+    { idiom: "To bell the cat", meaning: "to take a big risk" },
+    { idiom: "A cat on hot tin roof", meaning: "in the extremely nervous situation" },
+    { idiom: "Catnap", meaning: "a short sleep" },
+    { idiom: "Fat cat", meaning: "a wealthy or privileged person" },
+    { idiom: "Cat's meow", meaning: "something excellent or desirable" },
+    { idiom: "To play cat and mouse", meaning: "to win by cheating" },
+    { idiom: "Rain cats and dogs", meaning: "raining heavily" },
+    // ELEPHANT (3)
+    { idiom: "Elephant in the room/corner", meaning: "an obvious problem ignored by everyone" },
+    { idiom: "White elephant", meaning: "something valuable but useless" },
+    { idiom: "Have an elephant by the tail", meaning: "to struggle with a difficult problem" },
+    // HORSE (14)
+    { idiom: "One-trick pony", meaning: "someone or something with limited abilities" },
+    { idiom: "Dark horse", meaning: "an unexpected winner" },
+    { idiom: "Horse sense", meaning: "practical wisdom or common sense" },
+    { idiom: "From the horse's mouth", meaning: "direct information from the source" },
+    { idiom: "To beat/flog a dead horse", meaning: "to continue trying something useless" },
+    { idiom: "Horse trading", meaning: "selling or buying of MLAs and MPs" },
+    { idiom: "On horseback", meaning: "in the position to control" },
+    { idiom: "Take the reins", meaning: "to take control or responsibility" },
+    { idiom: "To put the cart before the horse", meaning: "to do things in the wrong order" },
+    { idiom: "To eat like a horse", meaning: "to eat too much" },
+    { idiom: "To back the wrong horse", meaning: "to support a person who will not win" },
+    { idiom: "Don't look a gift horse in the mouth", meaning: "You should not criticize a gift, even if you don't like it" },
+    { idiom: "Hold your horses", meaning: "slow down or wait" },
+    { idiom: "To get off your high horse", meaning: "stop acting as superior or arrogant" },
+    // COW (5)
+    { idiom: "Milk a cow for all it's worth", meaning: "to exploit something to maximum" },
+    { idiom: "Cash cow", meaning: "a reliable source of income" },
+    { idiom: "Sacred cow", meaning: "a person, institution, or belief that is so well-respected that it is beyond criticism or questioning" },
+    { idiom: "Until the cows come home", meaning: "until a very late or indefinite time" },
+    { idiom: "A cow in a cornfield", meaning: "someone clumsy (a bull in china shop)" },
+    // BULL (8)
+    { idiom: "A bull in a china shop", meaning: "someone very clumsy" },
+    { idiom: "Take the bull by the horns", meaning: "to confront a challenge directly" },
+    { idiom: "Red flag to a bull", meaning: "something that provokes anger" },
+    { idiom: "Bull session", meaning: "an informal and lengthy discussion or gathering" },
+    { idiom: "Bull and bear", meaning: "opposing forces or conflicting interests" },
+    { idiom: "Cock and bull story", meaning: "false story" },
+    { idiom: "To milk the bull", meaning: "try to do impossible" },
+    { idiom: "Bull headed", meaning: "inflexible, stubborn" },
+    // SHEEP (7)
+    { idiom: "Follow like sheep", meaning: "to follow blindly or conform" },
+    { idiom: "Counting sheep", meaning: "to fall asleep or relax" },
+    { idiom: "Sheepish grin", meaning: "an embarrassed or guilty smile" },
+    { idiom: "Black sheep", meaning: "a worthless fellow / a humiliation for his family" },
+    { idiom: "Separate the sheep from the goats", meaning: "to distinguish good from bad" },
+    { idiom: "A wolf in sheep's clothing", meaning: "a disguise or deception" },
+    { idiom: "Pull the wool over someone's eyes", meaning: "to deceive or trick" },
+    // RAT (9)
+    { idiom: "Rat race", meaning: "a competitive and stressful environment" },
+    { idiom: "Smell a rat", meaning: "to suspect something is wrong" },
+    { idiom: "Rat's nest", meaning: "a messy or complicated situation" },
+    { idiom: "In a rat hole", meaning: "in a difficult or confusing situation" },
+    { idiom: "Rat on someone", meaning: "to tattle or report someone" },
+    { idiom: "A rat-fink", meaning: "an informer or traitor" },
+    { idiom: "To rat out", meaning: "to betray or inform on someone" },
+    { idiom: "Rats in the attic", meaning: "strange or unusual thoughts or ideas" },
+    { idiom: "Like rats from a sinking ship", meaning: "people abandoning a failing project" },
+    // KANGAROO (2)
+    { idiom: "Kangaroo court", meaning: "an unofficial or unfair trial" },
+    { idiom: "Kangaroo leap", meaning: "a sudden or dramatic change" },
+    // LION (3)
+    { idiom: "Lion's share", meaning: "the largest part or majority" },
+    { idiom: "Paper lion", meaning: "someone who appears fierce but is actually weak" },
+    { idiom: "The lion sleeps tonight", meaning: "all is calm" },
+    // PIG (3)
+    { idiom: "Pig-headed", meaning: "stubborn or obstinate" },
+    { idiom: "When pigs fly", meaning: "something unlikely to happen" },
+    { idiom: "A guinea pig", meaning: "subject of an experiment" },
+    // FISH (12)
+    { idiom: "Fish out of water", meaning: "feeling uncomfortable or in trouble" },
+    { idiom: "To fish in troubled water", meaning: "to take undue advantage of one's problem" },
+    { idiom: "Fishy business", meaning: "suspicious or shady dealings" },
+    { idiom: "Fish-tale/story", meaning: "an exaggerated or fanciful story" },
+    { idiom: "Shooting fish in a barrel", meaning: "a task exceptionally easy to do" },
+    { idiom: "A cold fish", meaning: "Disinterested or having no emotion" },
+    { idiom: "To have better fish to fry", meaning: "to have more important things to do" },
+    { idiom: "Another/different kettle of fish", meaning: "spoken to recognize an abrupt shift in the topic being discussed" },
+    { idiom: "A queer fish", meaning: "a strange person" },
+    { idiom: "A big fish", meaning: "an important or influential person" },
+    { idiom: "To fish around", meaning: "investigate" },
+    { idiom: "Neither fish nor fowl", meaning: "something difficult to categorize, describe, or understand" },
+    // LEOPARD (1)
+    { idiom: "Leopard can't change its sport", meaning: "inherent characteristics that cannot be changed" },
+    // CROCODILE (1)
+    { idiom: "Crocodile tears", meaning: "false or affected tears or hypocritical sorrow" },
+    // BIRD (13)
+    { idiom: "Early bird", meaning: "someone who arrives or acts early" },
+    { idiom: "Early bird catches the worm", meaning: "people who start their work early have a better chance of success" },
+    { idiom: "Bird's eye view", meaning: "a view from high above" },
+    { idiom: "Bird brain", meaning: "someone who is considered foolish or stupid" },
+    { idiom: "Bird in the hand", meaning: "something that is already possessed or secured" },
+    { idiom: "A bird in the bush", meaning: "something that is potential or possible, but not yet realized" },
+    { idiom: "A bird in the hand is worth two in bush", meaning: "the things you already have are more valuable than things you might get" },
+    { idiom: "Bird of a feather", meaning: "people who share similar characteristics or interests" },
+    { idiom: "Kill two birds with one stone", meaning: "to achieve two goals with one action" },
+    { idiom: "The bird has flown", meaning: "something or someone has escaped or is no longer available" },
+    { idiom: "A little bird told me", meaning: "when one does not want to reveal the source of information" },
+    { idiom: "A bird in the gilded cage", meaning: "living in luxury but without freedom" },
+    { idiom: "To eat like a bird", meaning: "to eat too little" },
+    // DUCK (7)
+    { idiom: "A Lame duck", meaning: "someone or something that is weak and needs help" },
+    { idiom: "To get your ducks in a row", meaning: "to organize or prepare something in a systematic way" },
+    { idiom: "Like a duck to water", meaning: "to take to something easily or naturally" },
+    { idiom: "To play ducks and drakes", meaning: "to squander/to waste money" },
+    { idiom: "A sitting duck", meaning: "an easy target" },
+    { idiom: "A dead duck", meaning: "a useless/hopeless person or thing" },
+    { idiom: "To duck (verb)", meaning: "to avoid or dodge something" },
+    // HEN (4)
+    { idiom: "Hen-pecked", meaning: "a man who is dominated or controlled by his wife" },
+    { idiom: "Hen-hearted", meaning: "someone who is timid or cowardly" },
+    { idiom: "Hen-witted", meaning: "someone who is foolish or lacking in common sense" },
+    { idiom: "Run around like a headless hen", meaning: "to be in a state of confusion or panic" },
+    // CHICKEN (3)
+    { idiom: "Don't count your chickens before they are hatched", meaning: "don't assume something will happen until it has actually happened" },
+    { idiom: "Chicken-hearted/Chicken-livered", meaning: "someone who is timid" },
+    { idiom: "Chicken and egg problem", meaning: "a situation where it is unclear what the cause and effect are" },
+    // GOOSE (3)
+    { idiom: "Wild goose chase", meaning: "a pursuit that is futile" },
+    { idiom: "To cook someone's goose", meaning: "to spoil someone's plans" },
+    { idiom: "To kill the goose that lays the golden eggs", meaning: "to destroy something valuable or profitable" },
+    // MISCELLANEOUS ANIMAL (4)
+    { idiom: "Dead as dodo", meaning: "no longer active or popular" },
+    { idiom: "To ride the crane", meaning: "to take risks or be adventurous" },
+    { idiom: "A cock and bull story", meaning: "a story that is not true" },
+    { idiom: "To eat crow", meaning: "to admit defeat or humiliation" },
+
+    // --- IDIOMS ON INSECTS (20) ---
+    // Ant (5)
+    { idiom: "Busy as an ant", meaning: "to be very active and industrious" },
+    { idiom: "Ants in one's pants", meaning: "to be restless or impatient" },
+    { idiom: "Ant-eater", meaning: "very curious or inquisitive" },
+    { idiom: "Ant’s nest", meaning: "a busy and chaotic place" },
+    { idiom: "Ants in the Salad", meaning: "An unwelcome surprise in an otherwise pleasant situation" },
+    // Bee (8)
+    { idiom: "Queen bee", meaning: "the leader of a female group" },
+    { idiom: "Busy as a bee/busy bee", meaning: "very active or industrious" },
+    { idiom: "Bee in your bonnet", meaning: "an idea or obsession that you can't stop thinking about" },
+    { idiom: "Make a beeline", meaning: "to move quickly and directly towards something" },
+    { idiom: "Birds and Bees", meaning: "when parents explain their children about sex and sexual reproduction" },
+    { idiom: "Beehive/Bee's nest", meaning: "a place of activity or commotion" },
+    { idiom: "A bee in the ointment", meaning: "a small problem or annoyance that spoils something" },
+    { idiom: "Bee in one's hair", meaning: "a problem or annoyance that is persistent and hard to get rid of" },
+    // Butterfly (4)
+    { idiom: "A butterfly in the stomach", meaning: "a feeling of nervousness or anxiety" },
+    { idiom: "Butterfly effect", meaning: "a small change that has a significant impact" },
+    { idiom: "Social butterfly", meaning: "someone who is very social and has many friends" },
+    { idiom: "Chase butterflies", meaning: "to pursue unrealistic or impractical goals or dreams" },
+    // Miscellaneous Insects (3)
+    { idiom: "Fly in the ointment", meaning: "a small problem that spoils an otherwise good situation" },
+    { idiom: "Snake in the grass", meaning: "a hidden danger or threat" },
+    { idiom: "To open a can of worms", meaning: "to create a situation that causes a lot of problems when it starts to be dealt with" },
+
+    // --- IDIOMS ON BODY PARTS (179) ---
+    // EYE (16)
+    { idiom: "Apple of one’s eye", meaning: "Very dear to someone" },
+    { idiom: "In the blink of an eye", meaning: "Very quickly, almost instantly" },
+    { idiom: "Catch someone’s eye", meaning: "To attract someone’s attention" },
+    { idiom: "Turn a blind eye", meaning: "To ignore something deliberately" },
+    { idiom: "Keep an eye on", meaning: "To watch something/someone carefully" },
+    { idiom: "Have one’s eye on", meaning: "To aim on something" },
+    { idiom: "More than meets the eye", meaning: "There’s more to something than is immediately obvious" },
+    { idiom: "See eye to eye", meaning: "To agree with someone completely" },
+    { idiom: "An eye for an eye", meaning: "The idea of justice where punishment should be equal to crime" },
+    { idiom: "In the public eye", meaning: "Well-known and noticed by the public" },
+    { idiom: "A sight for sore eye", meaning: "Someone/something that is very pleasing to see" },
+    { idiom: "Feast your eyes on", meaning: "To look at something with great enjoyment" },
+    { idiom: "Eyes bigger than your stomach", meaning: "To take more food than you can eat" },
+    { idiom: "Cry your eyes out", meaning: "To cry a lot" },
+    { idiom: "Bull’s eye", meaning: "Center of target" },
+    { idiom: "All eyes on (someone/something)", meaning: "When everyone’s attention is focused on one person or thing" },
+    // EAR (10)
+    { idiom: "All ears", meaning: "Eager and attentive to listen" },
+    { idiom: "Lend an ear", meaning: "to listen sympathetically and attentively" },
+    { idiom: "Play it by ear", meaning: "To decide what to do as the situation develops, rather than planning ahead" },
+    { idiom: "Music to one’s ears", meaning: "Something pleasant to hear" },
+    { idiom: "Keep your ear to the ground", meaning: "Stay informed about current events or trends" },
+    { idiom: "In one ear and out the other", meaning: "Heard but quickly forgotten" },
+    { idiom: "Wet behind the ears", meaning: "Inexperienced or naive" },
+    { idiom: "Turn a deaf ear", meaning: "To ignore something" },
+    { idiom: "Fall on deaf ears", meaning: "To be ignored or disregarded" },
+    { idiom: "Up to one’s ears (in)", meaning: "To be deeply involved or overwhelmed with something" },
+    // LEG (8)
+    { idiom: "Break a leg", meaning: "To wish someone good luck" },
+    { idiom: "Cost an arm and a leg", meaning: "To be very expensive" },
+    { idiom: "Pull someone’s leg", meaning: "To tease someone" },
+    { idiom: "Not have a leg to stand on", meaning: "To have no valid argument or defense" },
+    { idiom: "Get a leg up", meaning: "To get an advantage" },
+    { idiom: "On its last legs", meaning: "Near the end of usefulness or life" },
+    { idiom: "To leg it", meaning: "To run away quickly" },
+    { idiom: "To have sea legs", meaning: "To adjust to a new situation" },
+    // FOOT (11)
+    { idiom: "Dead on one’s feet", meaning: "To be extremely tired" },
+    { idiom: "Find your feet", meaning: "To become comfortable or confident in a new situation" },
+    { idiom: "Cold feet", meaning: "To feel nervous before doing something" },
+    { idiom: "Get off on the right foot", meaning: "To make a good start" },
+    { idiom: "Put your best foot forward", meaning: "To try your hardest to make a good impression" },
+    { idiom: "Put your foot down", meaning: "To be firm and decisive" },
+    { idiom: "Foot the bill", meaning: "To pay for something, often reluctantly" },
+    { idiom: "Shoot yourself in the foot", meaning: "To harm your own interests through your actions" },
+    { idiom: "Put your foot in your mouth", meaning: "To say something embarrassing/inappropriate" },
+    { idiom: "Drag one’s feet", meaning: "be deliberately slow or reluctant to act" },
+    { idiom: "Get your feet wet", meaning: "To become familiar with a new situation" },
+    // HAND (13)
+    { idiom: "Lend/give a hand", meaning: "To help someone" },
+    { idiom: "Hand in hand", meaning: "Closely connected" },
+    { idiom: "On hand", meaning: "Readily available" },
+    { idiom: "At hand", meaning: "Near/close by" },
+    { idiom: "Wash your hands of something", meaning: "To stop being involved or take no responsibility" },
+    { idiom: "Have your hands full", meaning: "To be very busy or occupied" },
+    { idiom: "A safe pair of hands", meaning: "Someone reliable and trustworthy" },
+    { idiom: "Know like the back of your hand", meaning: "To know something extremely well" },
+    { idiom: "Take/have a hand in something", meaning: "To be involved in something" },
+    { idiom: "Free hand", meaning: "To have permission to make decision" },
+    { idiom: "Heavy hand", meaning: "To act with discipline" },
+    { idiom: "Show of hands", meaning: "to vote by raising hands" },
+    { idiom: "Win hands down", meaning: "To win easily" },
+    // ARM (10)
+    { idiom: "Cost an arm and a leg", meaning: "To be very expensive" },
+    { idiom: "Twist someone’s arm", meaning: "To persuade or pressure someone to do something" },
+    { idiom: "Arm in arm", meaning: "Walking closely together, often showing affection or unity" },
+    { idiom: "Keep someone at arm’s length", meaning: "To avoid becoming too friendly or emotionally involved" },
+    { idiom: "Strong-arm tactics", meaning: "The use of force or intimidation to get one’s way" },
+    { idiom: "Up in arms", meaning: "Very angry or upset about something" },
+    { idiom: "Welcome someone with open arms", meaning: "To greet someone warmly and enthusiastically" },
+    { idiom: "Give your right arm", meaning: "To be willing to sacrifice for someone/something" },
+    { idiom: "Have one arm tied behind your back", meaning: "To find something very easy to do" },
+    { idiom: "A shot in the arm", meaning: "Something that boosts confidence" },
+    // NOSE (9)
+    { idiom: "Pay through nose", meaning: "To pay excessively high or suffer badly for a mistake" },
+    { idiom: "Keep your nose to the grindstone", meaning: "To work hard and steadily" },
+    { idiom: "Poke/Stick your nose into (something)", meaning: "To interfere in other people’s business" },
+    { idiom: "Follow your nose", meaning: "To follow your instincts/intuition" },
+    { idiom: "Cut off your nose to spite your face", meaning: "To harm yourself in trying to hurt someone else" },
+    { idiom: "Look down your nose at someone", meaning: "To regard someone with contempt" },
+    { idiom: "Under your nose", meaning: "In plain sight, yet unnoticed" },
+    { idiom: "Keep your nose clean", meaning: "To stay out of trouble by avoiding illegal activities" },
+    { idiom: "Have your nose in the air", meaning: "To act arrogantly as if superior to others" },
+    // HEEL (8)
+    { idiom: "Achilles’ heel", meaning: "One’s weak point" },
+    { idiom: "Head over heels", meaning: "Completely in love" },
+    { idiom: "Bring someone to heel", meaning: "To force someone to obey or submit" },
+    { idiom: "Cool your heels", meaning: "To wait, often impatiently" },
+    { idiom: "Well-heeled", meaning: "Wealthy or affluent" },
+    { idiom: "Down-at-heel", meaning: "Shabby in appearance or condition" },
+    { idiom: "Take to one’s heel", meaning: "To run away" },
+    { idiom: "Show someone a clean pair of heel", meaning: "To run away quickly without looking back" },
+    // MOUTH (8)
+    { idiom: "Live from hand to mouth", meaning: "To barely earn enough to survive without saving" },
+    { idiom: "Don’t look a gift horse in the mouth", meaning: "Don’t criticize something received as a gift" },
+    { idiom: "Butter wouldn’t melt in (someone’s) mouth", meaning: "Used sarcastically to say someone looks innocent but may not be" },
+    { idiom: "Born with a silver spoon in your mouth", meaning: "Born into a wealthy and privileged family" },
+    { idiom: "Shoot your mouth off", meaning: "To talk too much or boast carelessly" },
+    { idiom: "Foam at the mouth", meaning: "To be extremely angry or agitated" },
+    { idiom: "Big mouth", meaning: "One who talks too much" },
+    { idiom: "Down in the mouth", meaning: "To be sad/depressed" },
+    // HEART (18)
+    { idiom: "Cross my heart", meaning: "A pledge of honesty or sincerity" },
+    { idiom: "Eat your heart out", meaning: "To express jealousy" },
+    { idiom: "Take something to heart", meaning: "To be deeply affected/upset by something" },
+    { idiom: "Wear your heart on your sleeve", meaning: "To openly show your emotions" },
+    { idiom: "Heart of gold", meaning: "To be very kind, generous, and compassionate" },
+    { idiom: "Take heart", meaning: "To be encouraged" },
+    { idiom: "Lose heart", meaning: "To become discouraged" },
+    { idiom: "To your heart's content", meaning: "To do something as much as you want or desire" },
+    { idiom: "Follow your heart", meaning: "To make decisions based on your emotions and intuition" },
+    { idiom: "Put your heart into something", meaning: "To do something with enthusiasm and effort" },
+    { idiom: "Heavy heart", meaning: "Feeling sad and weighed down by sorrow" },
+    { idiom: "Sick at heart", meaning: "Feeling discouraged or disheartened" },
+    { idiom: "Heart of stone", meaning: "A cold, unsympathetic person" },
+    { idiom: "Pour your heart out", meaning: "To express your emotions and feelings openly" },
+    { idiom: "Learn by heart", meaning: "To remember" },
+    { idiom: "Know by heart", meaning: "To know something perfectly from memory" },
+    { idiom: "Heart skips a beat", meaning: "To be surprised" },
+    { idiom: "A heartbeat away", meaning: "Very close to holding a position of power or responsibility" },
+    // FACE (8)
+    { idiom: "Face the music", meaning: "To accept the unpleasant consequences of one's mistakes" },
+    { idiom: "Keep a straight face", meaning: "To maintain a serious expression, especially when trying not to laugh" },
+    { idiom: "Put on a brave face", meaning: "To pretend to be happy or confident when you are actually feeling worried or upset" },
+    { idiom: "Get egg on your face", meaning: "To feel embarrassed, especially after making a mistake or being proven wrong" },
+    { idiom: "Lose face", meaning: "To lose respect" },
+    { idiom: "In the face of", meaning: "Despite a difficulty or obstacle" },
+    { idiom: "Fly in the face of (something)", meaning: "To contradict something" },
+    { idiom: "Make a long face", meaning: "A sad or disappointed expression" },
+    // TONGUE (8)
+    { idiom: "Tongue-tied", meaning: "Unable to speak, usually from nervousness or shyness" },
+    { idiom: "Slip of the tongue", meaning: "An accidental mistake while speaking" },
+    { idiom: "On the tip of my tongue", meaning: "You almost remember something but can’t quite recall it" },
+    { idiom: "Hold your tongue", meaning: "To keep quiet" },
+    { idiom: "Sharp-tongued", meaning: "Someone who speaks harshly or critically" },
+    { idiom: "Bite your tongue", meaning: "To stop yourself from saying something you really want to say" },
+    { idiom: "Silver-tongued", meaning: "Very persuasive or eloquent in speech" },
+    { idiom: "Loose tongue", meaning: "Someone who talks too much or reveals secrets" },
+    // TEETH (6)
+    { idiom: "By the skin of your teeth", meaning: "to achieve something only by a very narrow margin" },
+    { idiom: "Fight tooth and nail", meaning: "A fierce and determined effort to achieve something" },
+    { idiom: "Cut your teeth on", meaning: "To gain initial experience in a particular field or activity" },
+    { idiom: "Long in the tooth", meaning: "One who is getting old" },
+    { idiom: "Armed to the teeth", meaning: "Very well prepared or equipped with weapons" },
+    { idiom: "Kick in the teeth", meaning: "A disappointing or unfair setback" },
+    // NAIL (4)
+    { idiom: "Hit the nail on the head", meaning: "To do exactly the right thing; to be accurate or correct" },
+    { idiom: "Fight tooth and nail", meaning: "To struggle with great effort or determination" },
+    { idiom: "On the nail", meaning: "Immediately, without delay, or in cash" },
+    { idiom: "Nail down", meaning: "To finalize something, like an agreement or plan" },
+    // HAIR (9)
+    { idiom: "By a hair's breadth", meaning: "To have a narrow escape" },
+    { idiom: "Split hairs", meaning: "Argue about small or unimportant details" },
+    { idiom: "Let your hair down", meaning: "Relax and enjoy yourself" },
+    { idiom: "Get in someone’s hair", meaning: "To annoy or bother someone" },
+    { idiom: "Not a hair out of place", meaning: "Very neat, tidy, or perfectly groomed" },
+    { idiom: "Make your hair stand on end", meaning: "To frighten or shock someone" },
+    { idiom: "Bad hair day", meaning: "A day when everything seems to go wrong" },
+    { idiom: "Tear your hair out", meaning: "To worry excessively about something" },
+    { idiom: "Keep your hair on", meaning: "Calm down" },
+    // HEAD (17)
+    { idiom: "Keep your head", meaning: "Stay calm in a difficult situation" },
+    { idiom: "Go off one’s head", meaning: "To become crazy or mentally unsound" },
+    { idiom: "Lose your head", meaning: "To panic or lose control" },
+    { idiom: "Bury your head in the sand", meaning: "Ignore the reality" },
+    { idiom: "Over your head", meaning: "Too difficult to understand" },
+    { idiom: "Head over heels (in love)", meaning: "Deeply in love" },
+    { idiom: "Use your head", meaning: "Think carefully and logically to solve a problem" },
+    { idiom: "Get a head start", meaning: "Gain an advantage over others" },
+    { idiom: "Hit the nail on the head", meaning: "Be exactly right about something" },
+    { idiom: "Head honcho", meaning: "The person in charge, the boss" },
+    { idiom: "Have your head in the clouds", meaning: "Be unrealistic or impractical, often lost in thought" },
+    { idiom: "Bite someone's head off", meaning: "Respond to someone angrily and aggressively" },
+    { idiom: "Big-headed", meaning: "Arrogant or conceited" },
+    { idiom: "Thick/Empty-headed", meaning: "Stupid or unintelligent" },
+    { idiom: "Hotheaded", meaning: "Easily angered" },
+    { idiom: "All in your head", meaning: "Not real, existing only in your imagination" },
+    { idiom: "From head to toe", meaning: "Completely, all over" },
+    // KNEE (6)
+    { idiom: "Weak at the knees", meaning: "Physical weakness, often due to strong emotion like attraction, fear, or surprise" },
+    { idiom: "Bring someone to their knees", meaning: "To defeat or severely weaken someone" },
+    { idiom: "On bended knee", meaning: "To show deep respect" },
+    { idiom: "The bee's knees", meaning: "Someone or something that is exceptionally good or excellent" },
+    { idiom: "Knee-deep in/up to your knees in", meaning: "Extremely busy with something" },
+    { idiom: "At your mother's knee", meaning: "a time in the very distant past, often when learning something as a young child" },
+    // TOE (7)
+    { idiom: "Keep someone on their toes", meaning: "To stay alert and active" },
+    { idiom: "Dip a toe in the water", meaning: "To try something new or unfamiliar" },
+    { idiom: "Step on someone's toes", meaning: "To interfere with someone's area of responsibility or authority" },
+    { idiom: "Toe the line", meaning: "To conform to rules, regulations, or expectations" },
+    { idiom: "From head to toe", meaning: "From top to bottom" },
+    { idiom: "Go toe to toe", meaning: "To engage in a direct and often intense confrontation or argument" },
+    { idiom: "Turn up one's toes", meaning: "To die" },
+    // BLOOD (14)
+    { idiom: "Blood is thicker than water", meaning: "Family relationships are the most important" },
+    { idiom: "In cold blood", meaning: "Deliberately and without emotion" },
+    { idiom: "Bad blood", meaning: "Ill feeling or resentment between people" },
+    { idiom: "Blue blood", meaning: "Noble or aristocratic ancestry" },
+    { idiom: "Like getting blood from a stone", meaning: "Very difficult or impossible to obtain" },
+    { idiom: "Sweat blood", meaning: "To work extremely hard" },
+    { idiom: "Blood, sweat, and tears", meaning: "A lot of hard work and effort" },
+    { idiom: "Stir someone’s blood", meaning: "To excite or inspire someone" },
+    { idiom: "Have someone’s blood on your hands", meaning: "To be responsible for someone’s death or serious harm" },
+    { idiom: "Out for blood", meaning: "Determined to get revenge" },
+    { idiom: "Blood runs cold", meaning: "To suddenly feel great fear or horror" },
+    { idiom: "In hot blood", meaning: "Acting in a moment of anger or passion" },
+    { idiom: "The lifeblood of (something)", meaning: "The essential element that keeps it alive or working" },
+    { idiom: "One’s own flesh and blood", meaning: "A family member or relative" },
+    // BONE (6)
+    { idiom: "Bone of contention", meaning: "Cause of quarrel/dispute" },
+    { idiom: "Close to the bone", meaning: "To be very personal or sensitive" },
+    { idiom: "Cut to the bone", meaning: "To get to the essential or most important part of something" },
+    { idiom: "Feel in one's bones", meaning: "To have a strong intuition or feeling about something" },
+    { idiom: "Make no bones about", meaning: "To speak plainly or honestly about something without hesitation" },
+    { idiom: "Work one's fingers to the bone", meaning: "To work extremely hard" },
+    // MISCELLANEOUS BODY PARTS (4)
+    { idiom: "Keep body and soul together", meaning: "To survive, especially with just enough food or money" },
+    { idiom: "Jump out of your skin", meaning: "To be startled or frightened suddenly" },
+    { idiom: "Skeleton in the closet", meaning: "A hidden and potentially embarrassing secret" },
+    { idiom: "The spirit is willing, but the flesh is weak", meaning: "You want to do something, but lack the strength or ability" },
+
+    // --- IDIOMS ON FRUIT (19) ---
+    // APPLE (5)
+    { idiom: "The apple of one’s eye", meaning: "One who is very dear to someone" },
+    { idiom: "In apple pie order", meaning: "In perfect order/neat" },
+    { idiom: "Apples and oranges", meaning: "To compare two completely different things" },
+    { idiom: "Apple-polisher", meaning: "Someone who flatters to gain favor (similar to a teacher's pet)" },
+    { idiom: "Upset the apple cart", meaning: "To cause trouble or spoil someone's plans" },
+    // BANANA (8)
+    { idiom: "Go bananas", meaning: "To become very excited, crazy, or angry" },
+    { idiom: "Top banana", meaning: "The most important person in a group or organization" },
+    { idiom: "Second banana", meaning: "The assistant or subordinate to the most important person" },
+    { idiom: "Banana republic", meaning: "A small, politically unstable country, often dependent on a single export" },
+    { idiom: "Banana oil", meaning: "Nonsense or insincere talk (slang)" },
+    { idiom: "Banana split", meaning: "A situation or relationship that breaks apart" },
+    { idiom: "Peel the banana", meaning: "To reveal something gradually" },
+    { idiom: "Yellow as a banana", meaning: "Cowardly or easily frightened" },
+    // CHERRY (3)
+    { idiom: "A cherry on top", meaning: "Something extra that makes something better" },
+    { idiom: "Cherry-pick", meaning: "To select only the best or most desirable items" },
+    { idiom: "A bite at the cherry", meaning: "A chance or opportunity at something" },
+    // MISCELLANEOUS FRUIT (3)
+    { idiom: "When life gives you lemons, make lemonade", meaning: "Make the best of a bad situation" },
+    { idiom: "A plum job", meaning: "A very desirable job" },
+    { idiom: "Not give a fig", meaning: "Not care at all" },
+
+    // --- IDIOMS ON VEGETABLES (7) ---
+    // PEA (4)
+    { idiom: "Like two peas in a pod", meaning: "Exactly alike" },
+    { idiom: "As easy as peas", meaning: "Very easy" },
+    { idiom: "Like peas and carrots", meaning: "Go perfectly together" },
+    { idiom: "Not a pea's worth", meaning: "Very small amount or of little value" },
+    // BEAN (3)
+    { idiom: "Spill the beans", meaning: "Reveal a secret" },
+    { idiom: "Full of beans", meaning: "Energetic and lively" },
+    { idiom: "Not worth a hill of beans", meaning: "Worthless" },
+    // POTATO (2)
+    { idiom: "Hot potato", meaning: "A controversial issue" },
+    { idiom: "Couch potato", meaning: "A lazy person who watches TV too much" },
+    // CARROT (1)
+    { idiom: "Carrot and stick policy", meaning: "To use reward and punishment as motivation" },
+    
+    // --- IDIOMS ON FLOWERS (12) ---
+    // ROSE (4)
+    { idiom: "A bed of roses", meaning: "A comfortable or easy situation (often used in the negative)" },
+    { idiom: "See the world through rose-colored glasses", meaning: "Be overly optimistic" },
+    { idiom: "Every rose has its thorn", meaning: "Even good things have drawbacks" },
+    { idiom: "Under the rose", meaning: "In secret or in confidence" },
+    // LILLY (3)
+    { idiom: "Gild the lily/To paint the lily", meaning: "To add unnecessary decoration or improvement to something already beautiful" },
+    { idiom: "Lily-livered", meaning: "Cowardly or lacking courage" },
+    { idiom: "Lily-white", meaning: "Pure, innocent, or free from guilt; can also mean overly idealized" },
+    // MISCELLANEOUS FLOWER (3)
+    { idiom: "Push up daisies", meaning: "To be dead and buried" },
+    { idiom: "Nip something in the bud", meaning: "To stop a problem before it gets worse" },
+    { idiom: "Bloom where you are planted", meaning: "Make the best of your circumstances" },
+    { idiom: "Steal someone's thunder", meaning: "To take attention or credit away from someone else" }, 
+
+    // --- IDIOMS ON METAL (11) ---
+    // GOLD (10)
+    { idiom: "A golden handshake", meaning: "a large sum of money, paid at the time of retirement" },
+    { idiom: "Golden boy/girl", meaning: "a very popular/successful person" },
+    { idiom: "Golden rules", meaning: "basic rules of ethics or morality" },
+    { idiom: "Golden goose", meaning: "a continuing source of wealth or profit" },
+    { idiom: "Worth its weight in gold", meaning: "something very valuable" },
+    { idiom: "A heart of gold", meaning: "very kind" },
+    { idiom: "Golden ticket", meaning: "ticket or invitation for special occasion" },
+    { idiom: "Go for gold", meaning: "to struggle for the highest standard of achievement" },
+    { idiom: "Fool's gold", meaning: "something that looks good but actually is bad" },
+    { idiom: "Gold brick", meaning: "to avoid work or shirk responsibility pretending to be busy" },
+    // SILVER (7)
+    { idiom: "The silver screen", meaning: "A term for the cinema" },
+    { idiom: "Born with a silver spoon in mouth", meaning: "born in a rich family" },
+    { idiom: "To give something on a silver plate", meaning: "when something is offered to someone whole-heartedly" },
+    { idiom: "To cross someone's palm with silver", meaning: "to bribe (to grease the palm)" },
+    { idiom: "Every cloud has a silver lining", meaning: "every difficult situation has some hope" },
+    { idiom: "Silver tongued", meaning: "elegant" },
+    { idiom: "A silver bullet", meaning: "simple and effective solution to a complex problem" },
+
+    // --- IDIOMS ON WEATHER/NATURE (55) ---
+    // WEATHER (3)
+    { idiom: "A fairweather friend", meaning: "A friend of good times" },
+    { idiom: "Under the weather", meaning: "Feeling unwell or sick" },
+    { idiom: "Weather the storm", meaning: "To deal with a difficult situation successfully" },
+    // CLOUD (7)
+    { idiom: "On the cloud/on cloud nine", meaning: "very happy" },
+    { idiom: "Under the cloud", meaning: "under suspicion" },
+    { idiom: "Have your head in the cloud", meaning: "absent minded / daydreaming" },
+    { idiom: "To cloud the issue", meaning: "to distract from the main topic by introducing misleading topic" },
+    { idiom: "A cloud cuckoo land", meaning: "a utopia/ an ideal realm" },
+    { idiom: "A cloud on the horizon / bad cloud", meaning: "an omen" },
+    { idiom: "Every cloud has a silver lining", meaning: "There's something good in every bad situation" },
+    // STORM (10)
+    { idiom: "Calm before the storm", meaning: "A quiet period before chaos or trouble begins" },
+    { idiom: "A storm in a teacup", meaning: "A big fuss over something small or unimportant" },
+    { idiom: "Weather the storm", meaning: "To survive a difficult situation" },
+    { idiom: "Ride out the storm", meaning: "To endure trouble until it passes" },
+    { idiom: "Eye of the storm", meaning: "The calm center of a chaotic situation" },
+    { idiom: "Brew up a storm", meaning: "To cause trouble or create a commotion" },
+    { idiom: "Storm out/off", meaning: "To leave a place angrily" },
+    { idiom: "Storm into", meaning: "To enter a place suddenly and forcefully, often angrily" },
+    { idiom: "A storm is brewing", meaning: "Trouble or conflict is likely to happen soon" },
+    { idiom: "Take something by storm", meaning: "To have great success suddenly and unexpectedly" },
+    // WIND (5)
+    { idiom: "Get a second wind", meaning: "to experience a return of strength, energy, or ability" },
+    { idiom: "Know which way the wind blows", meaning: "to understand the current situation, public opinion, or likely future developments" },
+    { idiom: "Take the wind out of my sails", meaning: "to suddenly discourage someone or make them lose confidence" },
+    { idiom: "Throw caution to the wind", meaning: "To ignore safety rules and take a risk" },
+    { idiom: "To sell ice to Eskimos", meaning: "To persuade people to go against their best interests or to accept something unnecessary or preposterous" }, // Listed under WIND in PDF
+    // RAINBOW (5)
+    { idiom: "Chase a rainbow", meaning: "Pursuing unrealistic or impossible dreams" },
+    { idiom: "Catch a rainbow", meaning: "To achieve something rare or impossible" },
+    { idiom: "Pot of gold at the end of the rainbow", meaning: "A great reward that is hoped for but rarely achieved" },
+    { idiom: "Paint with all the colors of the rainbow", meaning: "To be creative, expressive, and diverse" },
+    { idiom: "Somewhere over the rainbow", meaning: "An expression of longing for a better, happier place" },
+    // RAIN (7)
+    { idiom: "Take a rain check", meaning: "To postpone accepting an invitation or offer until later" },
+    { idiom: "Come rain or shine", meaning: "No matter what happens" },
+    { idiom: "Rain on someone's parade", meaning: "To spoil someone's plans or excitement" },
+    { idiom: "Save for a rainy day", meaning: "To set aside resources for a time of need" },
+    { idiom: "It never rains but it pours", meaning: "Problems tend to happen all at once" },
+    { idiom: "As right as rain", meaning: "Completely well or satisfactory" },
+    { idiom: "Raining cats and dogs", meaning: "Raining very heavily" },
+    // ICE (5)
+    { idiom: "To break the ice", meaning: "to initiate the conversation" },
+    { idiom: "To cut no ice", meaning: "to have no effect" },
+    { idiom: "To put on ice", meaning: "to postpone" },
+    { idiom: "To skate on thin ice", meaning: "to do something risky" },
+    { idiom: "Tip of the icebergs", meaning: "a small part of a big trouble" },
+    // WATER (10)
+    { idiom: "Pour oil on troubled waters", meaning: "To try to make peace in a tense situation" },
+    { idiom: "Keep your head above water", meaning: "To manage to survive, especially financially" },
+    { idiom: "Test the waters", meaning: "To try something out before committing fully" },
+    { idiom: "In hot water", meaning: "In trouble" },
+    { idiom: "Blow something out of the water", meaning: "To completely defeat or surpass something" },
+    { idiom: "Like a fish out of water", meaning: "Uncomfortable or out of place in a situation" },
+    { idiom: "Pour cold water on something", meaning: "To discourage or reduce enthusiasm for something" },
+    { idiom: "Water under the bridge", meaning: "Past events that are forgiven or forgotten" },
+    { idiom: "Come hell or high water", meaning: "No matter what happens" },
+    { idiom: "Cross that bridge when you come to it", meaning: "Deal with a problem only when it happens" },
+    // RIVER/HOT/COLD (8)
+    { idiom: "Sell down the river", meaning: "To betray someone" },
+    { idiom: "Bridge over troubled water", meaning: "Something that helps ease difficulty or tension" },
+    { idiom: "Paddle your own canoe", meaning: "To be independent and self-reliant" },
+    { idiom: "Up the creek without a paddle", meaning: "In serious trouble without a solution" },
+    { idiom: "Go with the flow", meaning: "To accept things as they happen without resistance" },
+    { idiom: "Still waters run deep", meaning: "Quiet or reserved people often have deep, complex thoughts" },
+    { idiom: "In hot water", meaning: "In trouble" }, 
+    { idiom: "Hot under the collar", meaning: "Angry or agitated" },
+    { idiom: "Strike while the iron is hot", meaning: "Act quickly while the opportunity is available" },
+    { idiom: "A hot potato", meaning: "A controversial or difficult issue no one wants to deal with" },
+    { idiom: "Hot-headed", meaning: "Quick to anger" },
+    { idiom: "Hot ticket", meaning: "Something very popular and in high demand" },
+    { idiom: "Hot as hell", meaning: "Extremely hot in temperature" },
+    { idiom: "Cold shoulder", meaning: "To ignore or show unfriendliness toward someone" },
+    { idiom: "Cold feet", meaning: "Sudden nervousness before doing something important" },
+    { idiom: "Catch a cold", meaning: "To get into trouble or suffer a setback" },
+    { idiom: "Left out in the cold", meaning: "Ignored or excluded" },
+    { idiom: "Pour/throw cold water on something", meaning: "To discourage or reduce enthusiasm" },
+    { idiom: "Stone-cold", meaning: "Completely without emotion, or absolutely certain" },
+    { idiom: "Give someone the cold eye", meaning: "To look at someone with dislike or disapproval" },
+    { idiom: "Cold as ice", meaning: "Very unfriendly or unemotional" },
+    { idiom: "In cold blood", meaning: "Without emotion or mercy" },
+    { idiom: "Break out in a cold sweat", meaning: "To suddenly become very nervous or afraid" },
+    { idiom: "Cold comfort", meaning: "A small or inadequate consolation" },
+
+    // --- IDIOMS ON KITCHEN/BAKERY (19) ---
+    { idiom: "To sugar-coat", meaning: "to present something in a superficially acceptable or attractive way" },
+    { idiom: "Baker's dozen", meaning: "13 items, rather than the usual 12" },
+    { idiom: "Half-baked", meaning: "not fully thought out or developed" },
+    { idiom: "Bread and butter", meaning: "a person's main source of income or livelihood" },
+    { idiom: "The breadwinner", meaning: "the person in a family who earns the main income" },
+    { idiom: "Know which side your bread is buttered", meaning: "to be aware of where your interests or benefits lie" },
+    { idiom: "Bread of life", meaning: "something that gives spiritual or emotional nourishment" },
+    { idiom: "To break bread", meaning: "to share a meal/to celebrate" },
+    { idiom: "Butter someone up", meaning: "to flatter or try to win someone over by being excessively nice or complimentary" },
+    { idiom: "Butter wouldn't melt in someone's mouth", meaning: "someone who speaks very smoothly and politely, often in a way that is insincere" },
+    { idiom: "The icing on the cake", meaning: "an additional pleasure or benefit that makes an already good situation even better" },
+    { idiom: "The cherry on the cake/top", meaning: "an additional benefit that improves an already very good situation" },
+    { idiom: "A piece of cake", meaning: "something that is very easy" },
+    { idiom: "Cake walk", meaning: "an easy or effortless task or situation" },
+    { idiom: "Cake hole", meaning: "mouth" },
+    { idiom: "Selling like hot cakes", meaning: "selling quickly and in large quantities" },
+    { idiom: "To eat humble pie", meaning: "to apologise and accept humiliation" },
+    { idiom: "To get caught with your hand in the cookie jar", meaning: "to get caught in the act of doing something wrong" },
+    { idiom: "To have a finger in every pie", meaning: "to be involved in many things" },
+
+    // --- IDIOMS ON DAYS/TIME (10) ---
+    { idiom: "Halcyon days", meaning: "A very happy and successful period of the past" },
+    { idiom: "Live wire days", meaning: "A very alert and energetic person" },
+    { idiom: "Hard days", meaning: "Period of difficulty and hardship" },
+    { idiom: "Gala days", meaning: "Days of celebration" },
+    { idiom: "Rainy days", meaning: "A possible time in future with financial crisis" },
+    { idiom: "Salad days", meaning: "The period when one is young and inexperienced" },
+    { idiom: "'D' day", meaning: "The day when something important will happen" },
+    { idiom: "A red letter day", meaning: "A very important day" },
+    { idiom: "Call it a day", meaning: "To stop working for the time being" },
+    { idiom: "Cook up a storm", meaning: "To cook enthusiastically and in large amounts" },
+
+    // --- IDIOMS ON CLOTHING/ACCESSORIES (22) ---
+    // BELT (2)
+    { idiom: "Tighten your belt", meaning: "Reduce one's expenses and economize" },
+    { idiom: "Hit below the belt", meaning: "Use unfair means to win" },
+    // HAT (8)
+    { idiom: "At the drop of a hat", meaning: "Immediately, without hesitation" },
+    { idiom: "Pull something out of a hat", meaning: "To produce something unexpectedly" },
+    { idiom: "Throw your hat in the ring", meaning: "To enter a competition or race" },
+    { idiom: "Hang up your hat", meaning: "To settle down somewhere" },
+    { idiom: "Keep something under your hat", meaning: "Keep something secret" },
+    { idiom: "Pass the hat", meaning: "Collect money from a group for a cause" },
+    { idiom: "Eat one's hat", meaning: "Expression to show disbelief" },
+    { idiom: "Wear many hats", meaning: "To have many roles or responsibilities" },
+    // SOCKS, SHOES & BOOT (7)
+    { idiom: "Fill someone's shoes", meaning: "Replace someone in their role" },
+    { idiom: "If the shoe fits, wear it", meaning: "If a remark applies to you, accept it" },
+    { idiom: "Shake in your boots", meaning: "To be very scared" },
+    { idiom: "Die with your boots on", meaning: "To keep working until you die" },
+    { idiom: "The boot is on the other foot", meaning: "The situation is now reversed" },
+    { idiom: "Give someone the boot", meaning: "Fire or dismiss someone" },
+    { idiom: "Pull your socks up", meaning: "Try harder, improve performance" },
+    // SLEEVE (4)
+    { idiom: "Wear your heart on your sleeve", meaning: "To openly show your emotions" },
+    { idiom: "Have/keep something up your sleeve", meaning: "To have a hidden plan, idea, or advantage" },
+    { idiom: "Roll up your sleeves", meaning: "To prepare to get to work or tackle a challenge" },
+    { idiom: "Ace up your sleeve", meaning: "A hidden advantage or resource" },
+    // MISCELLANEOUS CLOTHING (6)
+    { idiom: "Keep it zipped", meaning: "Keep quiet" },
+    { idiom: "Zip your lip", meaning: "Stop talking" },
+    { idiom: "Dressed to kill", meaning: "Wearing very stylish or attention-getting clothes" },
+    { idiom: "Dressed to the nines", meaning: "Dressed elegantly or fashionably" },
+    { idiom: "All dressed up and nowhere to go", meaning: "Prepared for an event that doesn't happen" },
+    { idiom: "Cut from the same cloth", meaning: "Very similar in character or style" },
+    { idiom: "Get caught with your pants down", meaning: "To be caught unprepared or embarrassed" },
+    { idiom: "Keep your shirt on", meaning: "Stay calm and patient" }, 
+
+    // --- IDIOMS ON NUMBERS (23) ---
+    // ONE (2)
+    { idiom: "One step at a time", meaning: "To do something slowly and carefully" },
+    { idiom: "One-track mind", meaning: "Thinking only about one thing" },
+    // TWO (3)
+    { idiom: "Two peas in a pod", meaning: "Very similar people" },
+    { idiom: "Put two and two together", meaning: "To figure something out from clues" },
+    { idiom: "It takes two to tango", meaning: "Both parties are responsible" },
+    // THREE (2)
+    { idiom: "Caught between two stools", meaning: "Unable to choose between two options" }, 
+    { idiom: "Three sheets to the wind", meaning: "Very drunk" },
+    { idiom: "Three strikes and you're out", meaning: "After multiple mistakes, no more chances" },
+    // FOUR (2)
+    { idiom: "On all fours", meaning: "On hands and knees" },
+    { idiom: "Four-letter word", meaning: "A rude or offensive word" },
+    // FIVE (3)
+    { idiom: "Take five", meaning: "Take a short break" },
+    { idiom: "High five", meaning: "A gesture of celebration" },
+    { idiom: "Give me five", meaning: "A request for a slap of the hand in celebration" },
+    // SIX (3)
+    { idiom: "Six feet under", meaning: "Dead and buried" },
+    { idiom: "Sixth sense", meaning: "A strong intuition" },
+    { idiom: "At sixes and sevens", meaning: "In a state of confusion or disorder" },
+    // SEVEN (1)
+    { idiom: "Seventh heaven", meaning: "Extreme happiness" },
+    // NINE (4)
+    { idiom: "Dressed to the nines", meaning: "Dressed elegantly or fashionably" },
+    { idiom: "On cloud nine", meaning: "Overjoyed, extremely happy" },
+    { idiom: "A stitch in time saves nine", meaning: "Acting early prevents bigger problems" },
+    { idiom: "A nine days wonder", meaning: "something or someone that creates a short-lived sensation" },
+    // TEN (3)
+    { idiom: "Perfect ten", meaning: "Flawless or excellent" },
+    { idiom: "Ten to one", meaning: "Very likely or almost certain" },
+    { idiom: "The oldest trick in the book", meaning: "A well-known and often-used deception" }, 
+    
+    // --- MISCELLANEOUS IDIOMS (23) ---
+    // DEVIL (11) <-- NEW ADDITION
+    { idiom: "To play devil's advocate", meaning: "to take an opposing viewpoint in a discussion, even if you agree with it, just to encourage the debate" },
+    { idiom: "To give the devil his due", meaning: "to give credit if a wicked person does something good" },
+    { idiom: "To speak of the devil", meaning: "when the person you were talking about appears unexpectedly" },
+    { idiom: "The devil is in detail", meaning: "if something that seems simple, small, or insignificant but it hides complicated or problematic issues" },
+    { idiom: "The devil in disguise", meaning: "someone that appears innocent or harmless but is actually wicked, harmful, or deceptive" },
+    { idiom: "The devil looks after his own", meaning: "when bad people often prosper unfairly, because the devil helps them" },
+    { idiom: "Devil may care (attitude)", meaning: "carefree and unconcerned about the consequences of one's actions" },
+    { idiom: "Empty mind is devil's workshop/idle hand is devil's tool", meaning: "if someone is workless his mind becomes a breeding ground for negative, harmful, or mischievous ideas" },
+    { idiom: "Between the devil and the deep blue sea", meaning: "being in a difficult situation where both options are equally bad or undesirable" },
+    { idiom: "The devil is beating his wife", meaning: "a weather event where it is raining while the sun is still shining" },
+    { idiom: "The spirit is willing, but the flesh is weak", meaning: "You want to do something, but lack the strength or ability" }, // Listed under Miscellaneous in PDF
+    
+    // COOK/EGG/BOOK (12)
+    { idiom: "Too many cooks spoil the broth", meaning: "When too many people are involved, it can ruin the outcome" },
+    { idiom: "Cook up a storm", meaning: "To cook enthusiastically and in large amounts" },
+    { idiom: "Cook someone's goose", meaning: "To ruin someone's plans" },
+    { idiom: "What's cooking?", meaning: "A casual way of asking 'What's happening?'" },
+    { idiom: "Cook the books", meaning: "To falsify financial records" },
+    { idiom: "Cooking on gas", meaning: "Making very good progress" },
+    { idiom: "Don't put all your eggs in one basket", meaning: "Don't risk everything on a single plan or opportunity" },
+    { idiom: "A good egg", meaning: "A kind, reliable, or good person" },
+    { idiom: "A bad egg", meaning: "A dishonest or unpleasant person" },
+    { idiom: "Walk on eggshells", meaning: "To act very carefully to avoid upsetting someone" },
+    { idiom: "Egg on your face", meaning: "Embarrassment from making a mistake or being wrong" },
+    { idiom: "To egg someone on", meaning: "To encourage someone to do something, often something risky or foolish" },
+    { idiom: "Kill the goose that lays the golden eggs", meaning: "To destroy something that is a source of ongoing profit or benefit" },
+    { idiom: "Don't judge a book by its cover", meaning: "Don't form opinions based solely on appearance" },
+    { idiom: "Read between the lines", meaning: "Understand the hidden or implied meaning" },
+    { idiom: "By the book", meaning: "Following rules or instructions exactly" },
+    { idiom: "An open book", meaning: "Someone who is easy to understand or transparent" },
+    { idiom: "A closed book", meaning: "Something or someone that is difficult to understand or mysterious" },
+    { idiom: "In someone's good books", meaning: "In someone's favor" },
+    { idiom: "In someone's bad books", meaning: "Out of someone's favor" },
+    { idiom: "Bookworm", meaning: "A person who loves reading" },
+    { idiom: "Hit the books", meaning: "To study hard" },
+    { idiom: "Close the book on something", meaning: "To end or stop being concerned with something" },
+    { idiom: "Bring someone to book", meaning: "To hold someone accountable for their actions" },
+    { idiom: "Throw the book at someone", meaning: "To punish someone as severely as possible" },
+    { idiom: "On the same page", meaning: "To agree or have the same understanding about something" },
+    { idiom: "Turn the page", meaning: "To start a new chapter in life or move on from the past" },
+    { idiom: "To balance the books", meaning: "To make sure income and expenses match in accounting" },
+    { idiom: "In my book", meaning: "In my opinion" },
+    { idiom: "One's cup of tea", meaning: "Something one likes or is good at" },
+    { idiom: "Storm in a teacup", meaning: "A small problem made to seem much bigger than it really is" },
+    { idiom: "Bitter cup", meaning: "A painful or unpleasant experience" },
+    { idiom: "My cup runneth over", meaning: "I have more blessings or good things than I could have hoped for" },
+    { idiom: "To drink from the same cup", meaning: "To share experiences, often hardships or joys, with someone" },
+    { idiom: "Pass the cup", meaning: "To share responsibility or distribute tasks" },
+    { idiom: "The ball is in your court", meaning: "It's your turn to take action or make a decision" },
+    { idiom: "Keep your eye on the ball", meaning: "Stay focused on the task at hand" },
+    { idiom: "Drop the ball", meaning: "To make a mistake or fail to do something important" },
+    { idiom: "Get the ball rolling", meaning: "To start an activity or process" },
+    { idiom: "Have a ball", meaning: "To have a great time" },
+    { idiom: "On the ball", meaning: "Alert, quick to understand, and efficient" },
+    { idiom: "Behind the eight ball", meaning: "In a difficult or disadvantageous position" },
+    { idiom: "Carry the ball", meaning: "To take responsibility for something" },
+    { idiom: "Cheaper by the dozen", meaning: "Things cost less per item when bought in larger quantities" },
+    { idiom: "Talk nineteen to the dozen", meaning: "To speak very quickly and energetically" },
+    { idiom: "Dozens of (something)", meaning: "A large but indefinite number" },
+    { idiom: "A baker's dozen", meaning: "Thirteen items instead of twelve" },
+    { idiom: "Cheating the baker's dozen", meaning: "Giving less than promised" },
+    { idiom: "Counting by the dozen", meaning: "Thinking or measuring in large amounts" },
+    { idiom: "Worth a dozen (men/women)", meaning: "Exceptionally capable or valuable compared to many others" },
+    { idiom: "Act the fool", meaning: "To behave in a silly or ridiculous way" },
+    { idiom: "A fool's errand", meaning: "A pointless or hopeless task" },
+    { idiom: "Play the fool", meaning: "To deliberately act silly, often to amuse others" },
+    { idiom: "Fool's gold", meaning: "Something that appears valuable but is actually worthless" },
+    { idiom: "Make a fool out of yourself", meaning: "To embarrass yourself through foolish actions" },
+    { idiom: "Fool's paradise", meaning: "A false sense of happiness or security" },
+    { idiom: "Play the fool to the gallery", meaning: "To act silly to attract attention from an audience" },
+    { idiom: "Go to the wall", meaning: "To be ruined or defeated, often financially" },
+    { idiom: "Hit the wall", meaning: "To reach a point where you are physically or mentally unable to continue" },
+    { idiom: "Back to the wall", meaning: "In a desperate or difficult situation with limited options" },
+    { idiom: "Build a wall around", meaning: "To isolate or protect from outside influence" },
+    { idiom: "A fly on the wall", meaning: "Someone who secretly observes without being noticed" },
+    { idiom: "Off the wall", meaning: "Unusual, eccentric, or unexpected" },
+    { idiom: "Bang your head against a brick wall", meaning: "To keep trying to achieve something that seems impossible" },
+    { idiom: "Cry into your sleeve", meaning: "To weep quietly, often in private or in self-pity" }
+
+];
+        // --- QUIZ LOGIC VARIABLES (Simplified) ---
+        const optionsLabels = ['A', 'B', 'C', 'D'];
+        
+        let currentQuestionIndex = 0;
+        let answered = false;
+        let quizQuestions = []; 
+
+        // DOM Elements
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const nextButton = document.getElementById('next-button');
+        const restartButton = document.getElementById('restart-button');
+        const quizResultEl = document.getElementById('quiz-result');
+        const quizContainerEl = document.getElementById('quiz-container');
+
+
+        // --- HELPER FUNCTIONS ---
+        
+        // Helper function to shuffle an array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Function to dynamically generate MCQ structure from idiomData
+        function generateQuizQuestions() {
+            const questions = [];
+            const meanings = idiomData.map(item => item.meaning);
+            
+            // Shuffle the idiomData once to randomize the order of questions
+            const shuffledIdioms = shuffleArray([...idiomData]);
+
+            shuffledIdioms.forEach((correctItem) => {
+                const question = correctItem.idiom;
+                const correctAnswer = correctItem.meaning;
+                
+                // Use a larger pool of all available meanings for distractors
+                let incorrectMeanings = meanings.filter(m => m !== correctAnswer);
+                
+                // Get 3 random incorrect options (distractors)
+                let incorrectCount = Math.min(3, incorrectMeanings.length);
+                incorrectMeanings = shuffleArray(incorrectMeanings).slice(0, incorrectCount);
+
+                // Ensure we have 4 options total, pad with empty strings if necessary
+                while(incorrectMeanings.length < 3) {
+                    incorrectMeanings.push("Meaning not available"); 
+                }
+
+                // Combine correct and incorrect options
+                const allOptions = shuffleArray([...incorrectMeanings, correctAnswer]);
+                
+                // Find the index of the correct answer in the shuffled options
+                const answerIndex = allOptions.findIndex(option => option === correctAnswer);
+
+                questions.push({
+                    question: question,
+                    options: allOptions,
+                    answerIndex: answerIndex
+                });
+            });
+
+            return questions;
+        }
+
+        // --- CORE QUIZ FUNCTIONS ---
+        
+        function initializeQuiz() {
+            quizQuestions = generateQuizQuestions(); 
+            currentQuestionIndex = 0;
+            answered = false;
+            
+            quizResultEl.classList.add('hidden');
+            restartButton.classList.add('hidden');
+            nextButton.classList.remove('hidden');
+            nextButton.disabled = true; // Disable next until answered
+            nextButton.textContent = 'Next Idiom';
+            quizContainerEl.classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        // Function to display the current question
+        function loadQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) {
+                showResults();
+                return;
+            }
+            
+            answered = false;
+            nextButton.disabled = true;
+            optionsContainerEl.innerHTML = '';
+            
+            const currentQ = quizQuestions[currentQuestionIndex];
+            
+            questionTextEl.textContent = currentQ.question;
+            
+            currentQ.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                
+                // HTML structure for vertical options
+                button.innerHTML = `
+                    <div class="option-label-container">
+                        <span class="option-label">${optionsLabels[index]}.</span> 
+                        <span class="option-text">${option}</span>
+                    </div>
+                `;
+                button.className = `option-btn`; 
+                button.id = `option-${index}`;
+
+                button.onclick = () => checkAnswer(button, index, currentQ.answerIndex);
+
+                optionsContainerEl.appendChild(button);
+            });
+        }
+        
+        // Function to check the user's answer
+        function checkAnswer(selectedButton, selectedIndex, correctAnswerIndex) {
+            if (answered) return; 
+            answered = true;
+            nextButton.disabled = false;
+            
+            // Disable all option buttons
+            Array.from(optionsContainerEl.children).forEach(button => {
+                button.disabled = true;
+            });
+            
+            // Highlight the correct answer (light green background)
+            const correctButton = optionsContainerEl.children[correctAnswerIndex];
+            correctButton.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+            correctButton.classList.add('bg-green-100', 'border-green-500', 'text-green-700', 'font-bold');
+
+            if (selectedIndex === correctAnswerIndex) {
+                // Correct answer (show dark green)
+                selectedButton.classList.remove('bg-green-100', 'border-green-500', 'text-green-700'); 
+                selectedButton.classList.add('bg-green-600', 'text-white', 'shadow-lg');
+            } else {
+                // Wrong answer (show red)
+                selectedButton.classList.remove('bg-white', 'text-gray-700');
+                selectedButton.classList.add('bg-red-500', 'text-white', 'shadow-lg');
+            }
+        }
+
+        // --- MOVEMENT FUNCTION ---
+
+        function moveToNextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+        
+        // Assign event handlers
+        nextButton.onclick = moveToNextQuestion;
+
+        // Function to show the final results
+        function showResults() {
+            quizContainerEl.classList.add('hidden');
+            quizResultEl.classList.remove('hidden');
+            
+            restartButton.classList.remove('hidden');
+            nextButton.classList.add('hidden');
+        }
+
+        // Start the quiz on page load
+        window.onload = initializeQuiz;
+
+    </script>
+</body>
+</html>
